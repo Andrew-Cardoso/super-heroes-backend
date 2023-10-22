@@ -1,12 +1,13 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { HeroesService } from './heroes.service';
+import { PaginationDto } from './dtos/pagination.dto';
 
 @Controller('heroes')
 export class HeroesController {
   constructor(private heroesService: HeroesService) {}
 
   @Get()
-  findHeroes() {
-    return this.heroesService.findHeroes();
+  findHeroes(@Query() pagination: PaginationDto) {
+    return this.heroesService.findHeroes(pagination);
   }
 }
