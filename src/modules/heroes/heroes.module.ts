@@ -16,5 +16,6 @@ import { MarvelConfig } from 'src/config/configuration';
   ],
   controllers: [HeroesController],
   providers: [HeroesService],
+  exports: [HeroesService],
 })
 export class HeroesModule {}

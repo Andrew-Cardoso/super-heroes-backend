@@ -5,6 +5,8 @@ import { MarvelConfig } from 'src/config/configuration';
 import { PrismaService } from '../shared/prisma/prisma.service';
 import { createHash } from 'node:crypto';
 import { PaginationDto } from './dtos/pagination.dto';
+import { PaginatedResult } from './interfaces/paginated-result';
+import { Hero } from './interfaces/hero';
 
 @Injectable()
 export class HeroesService {
@@ -18,7 +20,10 @@ export class HeroesService {
     private prismaService: PrismaService,
   ) {}
 
-  async findHeroes({ limit, offset }: PaginationDto) {
+  async findHeroes({ page }: PaginationDto): Promise<PaginatedResult<Hero>> {
+    const limit = 100;
+    const offset = page * limit;
+
     const url = `/v1/public/characters?limit=${limit}&offset=${offset}`;
 
     const cachedResponse = await this.prismaService.request.findUnique({
@@ -27,7 +32,11 @@ export class HeroesService {
       },
     });
 
-    if (cachedResponse) return cachedResponse.content;
+    if (cachedResponse) {
+      return typeof cachedResponse.content === 'string'
+        ? JSON.parse(cachedResponse.content)
+        : (cachedResponse.content as unknown as PaginatedResult<Hero>);
+    }
 
     const ts = Date.now();
     const { privateKey, publicKey } = this.marvel;
@@ -39,12 +48,14 @@ export class HeroesService {
       `${url}&ts=${ts}&apikey=${publicKey}&hash=${hash}`,
     );
 
-    await this.prismaService.request.create({
-      data: {
-        url,
-        content: response.data.data,
-      },
-    });
+    if (response.data.data.results?.length > 0) {
+      await this.prismaService.request.create({
+        data: {
+          url,
+          content: response.data.data,
+        },
+      });
+    }
 
     return response.data.data;
   }
