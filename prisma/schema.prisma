@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,11 +7,100 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Request {
-  id        Int      @id @default(autoincrement())
-  url       String   @unique
-  content   Json
-  createdAt DateTime @default(now()) @map("created_at")
+model Hero {
+  id           String        @id @default(uuid())
+  heroId       Int           @unique @map("hero_id")
+  name         String
+  description  String
+  modified     DateTime?
+  resourceURI  String        @map("resource_uri")
+  thumbnail    Thumbnail?
+  urls         Url[]
+  comicContent ComicContent?
+  storyContent StoryContent?
+  eventContent EventContent?
+  serieContent SerieContent?
 
-  @@map("requests")
+  @@map("heroes")
+}
+
+model ComicContent {
+  heroId        String      @unique @map("hero_id")
+  contentItemId String      @unique @map("content_item_id")
+  contentItem   ContentItem @relation(fields: [contentItemId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  hero          Hero        @relation(fields: [heroId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@map("comic_content")
+}
+
+model StoryContent {
+  heroId        String      @unique @map("hero_id")
+  contentItemId String      @unique @map("content_item_id")
+  contentItem   ContentItem @relation(fields: [contentItemId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  hero          Hero        @relation(fields: [heroId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@map("story_content")
+}
+
+model EventContent {
+  heroId        String      @unique @map("hero_id")
+  contentItemId String      @unique @map("content_item_id")
+  contentItem   ContentItem @relation(fields: [contentItemId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  hero          Hero        @relation(fields: [heroId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@map("event_content")
+}
+
+model SerieContent {
+  heroId        String      @unique @map("hero_id")
+  contentItemId String      @unique @map("content_item_id")
+  contentItem   ContentItem @relation(fields: [contentItemId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  hero          Hero        @relation(fields: [heroId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@map("serie_content")
+}
+
+model ContentItem {
+  id            String        @id @default(uuid())
+  available     Int
+  collectionURI String        @map("collection_uri")
+  returned      Int
+  storyContent  StoryContent?
+  eventContent  EventContent?
+  serieContent  SerieContent?
+  comicContent  ComicContent?
+  items         Item[]
+
+  @@map("content_items")
+}
+
+model Item {
+  id          String      @id @default(uuid())
+  resourceURI String      @map("resource_uri")
+  name        String
+  type        String?
+  contentId   String      @map("content_id")
+  contentItem ContentItem @relation(fields: [contentId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@map("items")
+}
+
+model Thumbnail {
+  id        String @id @default(uuid())
+  path      String
+  extension String
+  heroId    String @unique @map("hero_id")
+  hero      Hero   @relation(fields: [heroId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@map("thumbnails")
+}
+
+model Url {
+  id     String @id @default(uuid())
+  url    String
+  type   String
+  heroId String @map("hero_id")
+  hero   Hero   @relation(fields: [heroId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@map("urls")
 }

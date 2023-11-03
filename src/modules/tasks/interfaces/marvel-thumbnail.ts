@@ -1,4 +1,4 @@
-export interface Thumbnail {
+export interface MarvelThumbnail {
   path: string;
   extension: string;
 }
